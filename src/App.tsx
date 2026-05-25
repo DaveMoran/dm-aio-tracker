@@ -5,7 +5,7 @@ import ChecklistPage from './components/checklist/ChecklistPage'
 import ListsPage from './components/lists/ListsPage'
 import WorkoutPage from './components/workout/WorkoutPage'
 import FoodPage from './components/food/FoodPage'
-import ComingSoon from './components/placeholder/ComingSoon'
+import BootcampPage from './components/bootcamp/BootcampPage'
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabId>('checklist')
@@ -16,14 +16,7 @@ export default function App() {
       {activeTab === 'lists' && <ListsPage />}
       {activeTab === 'workout' && <WorkoutPage />}
       {activeTab === 'food' && <FoodPage />}
-      {activeTab === 'bootcamp' && (
-        <ComingSoon
-          phase={5}
-          title="Coding Bootcamp"
-          description="Track your curriculum progress, projects, and coding streaks."
-          icon="💻"
-        />
-      )}
+      {activeTab === 'bootcamp' && <BootcampPage />}
       <BottomNav active={activeTab} onChange={setActiveTab} />
     </div>
   )

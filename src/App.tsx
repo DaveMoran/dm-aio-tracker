@@ -4,6 +4,7 @@ import BottomNav from './components/BottomNav'
 import ChecklistPage from './components/checklist/ChecklistPage'
 import ListsPage from './components/lists/ListsPage'
 import WorkoutPage from './components/workout/WorkoutPage'
+import FoodPage from './components/food/FoodPage'
 import ComingSoon from './components/placeholder/ComingSoon'
 
 export default function App() {
@@ -14,14 +15,7 @@ export default function App() {
       {activeTab === 'checklist' && <ChecklistPage />}
       {activeTab === 'lists' && <ListsPage />}
       {activeTab === 'workout' && <WorkoutPage />}
-      {activeTab === 'food' && (
-        <ComingSoon
-          phase={4}
-          title="Food Tracker"
-          description="Log meals, track macros, and build healthy eating habits."
-          icon="🥗"
-        />
-      )}
+      {activeTab === 'food' && <FoodPage />}
       {activeTab === 'bootcamp' && (
         <ComingSoon
           phase={5}

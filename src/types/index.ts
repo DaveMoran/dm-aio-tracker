@@ -93,3 +93,26 @@ export interface WorkoutExerciseCompletion {
   date: string
   completed_at: string
 }
+
+// Nutrition
+export interface DayTargets {
+  day_of_week: number // 0=Mon … 6=Sun
+  calories_min: number
+  calories_max: number
+  protein_min: number
+  protein_max: number
+  carbs_min: number
+  carbs_max: number
+  fat_min: number
+  fat_max: number
+}
+
+export interface MacroLog {
+  id: string
+  date: string
+  calories: number | null
+  protein: number | null
+  carbs: number | null
+  fat: number | null
+  logged_at: string
+}

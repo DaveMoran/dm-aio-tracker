@@ -3,6 +3,7 @@ import type { TabId } from './types'
 import BottomNav from './components/BottomNav'
 import ChecklistPage from './components/checklist/ChecklistPage'
 import ListsPage from './components/lists/ListsPage'
+import WorkoutPage from './components/workout/WorkoutPage'
 import ComingSoon from './components/placeholder/ComingSoon'
 
 export default function App() {
@@ -12,14 +13,7 @@ export default function App() {
     <div className="flex flex-col min-h-dvh bg-[#F7F3EE]">
       {activeTab === 'checklist' && <ChecklistPage />}
       {activeTab === 'lists' && <ListsPage />}
-      {activeTab === 'workout' && (
-        <ComingSoon
-          phase={3}
-          title="Workout Tracker"
-          description="Track your marathon training runs, mileage, and weekly plans."
-          icon="🏃"
-        />
-      )}
+      {activeTab === 'workout' && <WorkoutPage />}
       {activeTab === 'food' && (
         <ComingSoon
           phase={4}

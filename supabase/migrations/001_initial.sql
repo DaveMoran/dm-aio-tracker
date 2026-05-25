@@ -30,16 +30,15 @@ create policy "allow_all_completions" on task_completions for all using (true) w
 
 -- Seed default task list
 insert into tasks (name, period, sort_order) values
-  ('Hydrate (16oz water)',       'AM', 1),
-  ('Morning stretch / movement', 'AM', 2),
-  ('Healthy breakfast',          'AM', 3),
-  ('Journal / set intentions',   'AM', 4),
-  ('Review goals for the day',   'AM', 5),
-  ('Meditate (5 min)',           'AM', 6),
-  ('Evening walk',               'PM', 1),
-  ('Gratitude journal',          'PM', 2),
-  ('Read (30 min)',              'PM', 3),
-  ('Prep for tomorrow',          'PM', 4),
-  ('Screen-free wind down',      'PM', 5),
-  ('In bed by target time',      'PM', 6)
+  ('Litter 1',                  'AM', 1),
+  ('Litter 2',                  'AM', 2),
+  ('Morning Routine',           'AM', 3),
+  ('Swiffer',                   'AM', 4),
+  ('Clean Bedroom / Kitchen',   'AM', 5),
+  ('Vitamins / Creatine',       'AM', 6),
+  ('Prep Stations',             'PM', 1),
+  ('Nighttime Routine',         'PM', 2),
+  ('Screen-free wind down',     'PM', 3),
+  ('Refill Waters',             'PM', 4),
+  ('Clean Living Room / Bathroom', 'PM', 5)
 on conflict do nothing;

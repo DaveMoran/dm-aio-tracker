@@ -5,18 +5,17 @@ const LOCAL_TASKS_KEY = 'dm_tracker_tasks'
 const LOCAL_COMPLETIONS_KEY = 'dm_tracker_completions'
 
 const DEFAULT_TASKS: Omit<Task, 'created_at'>[] = [
-  { id: 'am-1', name: 'Hydrate (16oz water)', period: 'AM', sort_order: 1 },
-  { id: 'am-2', name: 'Morning stretch / movement', period: 'AM', sort_order: 2 },
-  { id: 'am-3', name: 'Healthy breakfast', period: 'AM', sort_order: 3 },
-  { id: 'am-4', name: 'Journal / set intentions', period: 'AM', sort_order: 4 },
-  { id: 'am-5', name: 'Review goals for the day', period: 'AM', sort_order: 5 },
-  { id: 'am-6', name: 'Meditate (5 min)', period: 'AM', sort_order: 6 },
-  { id: 'pm-1', name: 'Evening walk', period: 'PM', sort_order: 1 },
-  { id: 'pm-2', name: 'Gratitude journal', period: 'PM', sort_order: 2 },
-  { id: 'pm-3', name: 'Read (30 min)', period: 'PM', sort_order: 3 },
-  { id: 'pm-4', name: 'Prep for tomorrow', period: 'PM', sort_order: 4 },
-  { id: 'pm-5', name: 'Screen-free wind down', period: 'PM', sort_order: 5 },
-  { id: 'pm-6', name: 'In bed by target time', period: 'PM', sort_order: 6 },
+  { id: 'am-1', name: 'Litter 1', period: 'AM', sort_order: 1 },
+  { id: 'am-2', name: 'Litter 2', period: 'AM', sort_order: 2 },
+  { id: 'am-3', name: 'Morning Routine', period: 'AM', sort_order: 3 },
+  { id: 'am-4', name: 'Swiffer', period: 'AM', sort_order: 4 },
+  { id: 'am-5', name: 'Clean Bedroom / Kitchen', period: 'AM', sort_order: 5 },
+  { id: 'am-6', name: 'Vitamins / Creatine', period: 'AM', sort_order: 6 },
+  { id: 'pm-1', name: 'Prep Stations', period: 'PM', sort_order: 1 },
+  { id: 'pm-2', name: 'Nighttime Routine', period: 'PM', sort_order: 2 },
+  { id: 'pm-3', name: 'Screen-free wind down', period: 'PM', sort_order: 3 },
+  { id: 'pm-4', name: 'Refill Waters', period: 'PM', sort_order: 4 },
+  { id: 'pm-5', name: 'Clean Living Room / Bathroom', period: 'PM', sort_order: 5 },
 ]
 
 function todayStr() {

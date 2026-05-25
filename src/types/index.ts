@@ -45,3 +45,51 @@ export interface TodoItem {
   completed: boolean
   created_at: string
 }
+
+// Workout
+export type WorkoutCategory = 'run' | 'strength' | 'race' | 'cross'
+export type WorkoutItemType = 'single' | 'program'
+
+export interface WorkoutPlan {
+  id: string
+  name: string
+  start_date: string
+  total_weeks: number
+  active: boolean
+  created_at: string
+}
+
+export interface WorkoutScheduleItem {
+  id: string
+  plan_id: string
+  week_number: number
+  day_of_week: number // 0=Mon … 6=Sun
+  sort_order: number
+  label: string
+  type: WorkoutItemType
+  category: WorkoutCategory
+  notes: string | null
+  created_at: string
+}
+
+export interface WorkoutProgramExercise {
+  id: string
+  schedule_item_id: string
+  sort_order: number
+  label: string
+  created_at: string
+}
+
+export interface WorkoutCompletion {
+  id: string
+  schedule_item_id: string
+  date: string
+  completed_at: string
+}
+
+export interface WorkoutExerciseCompletion {
+  id: string
+  exercise_id: string
+  date: string
+  completed_at: string
+}

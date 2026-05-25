@@ -15,10 +15,33 @@ export interface TaskCompletion {
   completed_at: string
 }
 
-export type TabId = 'checklist' | 'shopping' | 'workout' | 'food' | 'bootcamp'
+export type TabId = 'checklist' | 'lists' | 'workout' | 'food' | 'bootcamp'
 
 export interface Tab {
   id: TabId
   label: string
   icon: string
+}
+
+// Shopping
+export type ShoppingCategory = 'Groceries' | 'Productivity' | 'Gifts'
+
+export interface ShoppingItem {
+  id: string
+  name: string
+  category: ShoppingCategory
+  completed: boolean
+  created_at: string
+}
+
+// Todo
+export type Priority = 'high' | 'medium' | 'low'
+
+export interface TodoItem {
+  id: string
+  name: string
+  priority: Priority | null
+  due_date: string | null
+  completed: boolean
+  created_at: string
 }

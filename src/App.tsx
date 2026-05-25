@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { TabId } from './types'
 import BottomNav from './components/BottomNav'
 import ChecklistPage from './components/checklist/ChecklistPage'
+import ListsPage from './components/lists/ListsPage'
 import ComingSoon from './components/placeholder/ComingSoon'
 
 export default function App() {
@@ -10,14 +11,7 @@ export default function App() {
   return (
     <div className="flex flex-col min-h-dvh bg-[#F7F3EE]">
       {activeTab === 'checklist' && <ChecklistPage />}
-      {activeTab === 'shopping' && (
-        <ComingSoon
-          phase={2}
-          title="Shopping List"
-          description="A smart grocery and shopping list to keep you organized."
-          icon="🛒"
-        />
-      )}
+      {activeTab === 'lists' && <ListsPage />}
       {activeTab === 'workout' && (
         <ComingSoon
           phase={3}

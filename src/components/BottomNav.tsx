@@ -25,19 +25,16 @@ const tabs: TabDef[] = [
     ),
   },
   {
-    id: 'shopping',
-    label: 'Shopping',
+    id: 'lists',
+    label: 'Lists',
     icon: (active) => (
       <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6">
-        <path
-          d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"
-          stroke={active ? '#5A8A6A' : '#B8A89A'}
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path d="M3 6h18" stroke={active ? '#5A8A6A' : '#B8A89A'} strokeWidth="1.8" strokeLinecap="round" />
-        <path d="M16 10a4 4 0 01-8 0" stroke={active ? '#5A8A6A' : '#B8A89A'} strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M8 6h13" stroke={active ? '#5A8A6A' : '#B8A89A'} strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M8 12h13" stroke={active ? '#5A8A6A' : '#B8A89A'} strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M8 18h13" stroke={active ? '#5A8A6A' : '#B8A89A'} strokeWidth="1.8" strokeLinecap="round" />
+        <circle cx="3.5" cy="6" r="1" fill={active ? '#5A8A6A' : '#B8A89A'} />
+        <circle cx="3.5" cy="12" r="1" fill={active ? '#5A8A6A' : '#B8A89A'} />
+        <circle cx="3.5" cy="18" r="1" fill={active ? '#5A8A6A' : '#B8A89A'} />
       </svg>
     ),
   },

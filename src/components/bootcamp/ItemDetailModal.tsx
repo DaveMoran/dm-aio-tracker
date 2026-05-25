@@ -62,7 +62,7 @@ export default function ItemDetailModal({ type, text, subtext, savedContent, onS
               placeholder="https://github.com/owner/repo/pull/123"
               autoFocus
               className={[
-                'w-full px-4 py-3 rounded-xl border text-[14px] bg-white outline-none transition-colors',
+                'w-full px-4 py-3 rounded-xl border text-[16px] bg-white outline-none transition-colors',
                 showError
                   ? 'border-[#D4433A] focus:border-[#D4433A]'
                   : isValid && trimmed
@@ -85,7 +85,7 @@ export default function ItemDetailModal({ type, text, subtext, savedContent, onS
               onChange={e => setValue(e.target.value)}
               placeholder="Write your answer here…"
               autoFocus
-              className="w-full h-52 px-4 py-3 rounded-xl border border-[#E8E0D5] text-[14px] bg-white resize-none outline-none focus:border-[#8B7355] transition-colors"
+              className="w-full h-52 px-4 py-3 rounded-xl border border-[#E8E0D5] text-[16px] bg-white resize-none outline-none focus:border-[#8B7355] transition-colors"
             />
           </div>
         )}

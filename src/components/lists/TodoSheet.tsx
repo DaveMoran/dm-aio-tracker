@@ -23,7 +23,7 @@ interface Props {
 
 export default function TodoSheet({ item, onSave, onDelete, onClose }: Props) {
   const [name, setName] = useState(item?.name ?? '')
-  const [priority, setPriority] = useState<Priority | null>(item?.priority ?? null)
+  const [priority, setPriority] = useState<Priority | null>(item?.priority ?? 'low')
   const [dueDate, setDueDate] = useState(item?.due_date ?? '')
 
   const handleSave = () => {

@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
-import type { BootcampDay, BootcampWeek } from '../../data/bootcampData'
+import type { BootcampDay, BootcampWeek, BootcampItemType } from '../../data/bootcampData'
 import { getWeekForDate, getNearestWeek, defaultDateForWeek } from '../../data/bootcampData'
-import { fetchCompletions, toggleCompletion } from '../../lib/bootcampStorage'
+import { fetchBootcampState, toggleCompletion, saveItemContent } from '../../lib/bootcampStorage'
+import ItemDetailModal from './ItemDetailModal'
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -29,49 +30,125 @@ const BLOCK_STYLES: Record<string, { bg: string; text: string }> = {
   'Afternoon Block': { bg: 'bg-[#F5F0FF]', text: 'text-[#7A5A9A]' },
 }
 
+// ── modal state ───────────────────────────────────────────────────────────────
+
+interface ModalState {
+  id: string
+  type: Exclude<BootcampItemType, 'read'>
+  text: string
+  subtext?: string
+}
+
+// ── type badge ────────────────────────────────────────────────────────────────
+
+function TypeBadge({ type }: { type: BootcampItemType }) {
+  if (type === 'read') return null
+  return (
+    <span className={[
+      'inline-flex items-center text-[10px] font-semibold px-1.5 py-0.5 rounded-full ml-1.5 flex-shrink-0',
+      type === 'write' ? 'bg-[#FFF8EE] text-[#C8903A]' : 'bg-[#EEF3FF] text-[#5A7A9A]',
+    ].join(' ')}>
+      {type === 'write' ? '✏️' : '🔗'}
+    </span>
+  )
+}
+
 // ── small reusable checkbox row ───────────────────────────────────────────────
 
 function CheckRow({
-  id, text, subtext, done, onToggle,
+  id, text, subtext, done, type = 'read', content,
+  onToggle, onOpenModal,
 }: {
-  id: string; text: string; subtext?: string; done: boolean; onToggle: (id: string, v: boolean) => void
+  id: string; text: string; subtext?: string; done: boolean
+  type?: BootcampItemType; content?: string
+  onToggle: (id: string, v: boolean) => void
+  onOpenModal?: (state: ModalState) => void
 }) {
-  return (
-    <button
-      type="button"
-      onClick={() => onToggle(id, !done)}
-      className="flex items-start gap-3 text-left w-full py-2"
-    >
-      <span className={[
-        'w-5 h-5 rounded-full border-2 flex-shrink-0 mt-0.5 flex items-center justify-center transition-all',
-        done ? 'bg-[#5A8A6A] border-[#5A8A6A]' : 'border-[#C8B8A8]',
-      ].join(' ')}>
-        {done && (
-          <svg viewBox="0 0 10 8" fill="none" className="w-2.5 h-2.5">
-            <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        )}
-      </span>
-      <span className="flex-1 min-w-0">
+  const isModal = type === 'write' || type === 'code'
+
+  const circle = (
+    <span className={[
+      'w-5 h-5 rounded-full border-2 flex-shrink-0 mt-0.5 flex items-center justify-center transition-all',
+      done ? 'bg-[#5A8A6A] border-[#5A8A6A]' : 'border-[#C8B8A8]',
+    ].join(' ')}>
+      {done && (
+        <svg viewBox="0 0 10 8" fill="none" className="w-2.5 h-2.5">
+          <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      )}
+    </span>
+  )
+
+  const textBlock = (
+    <span className="flex-1 min-w-0">
+      <span className="flex items-start flex-wrap gap-x-0.5">
         <span className={['text-[14px] leading-snug', done ? 'text-[#B8A89A] line-through' : 'text-[#2C1810]'].join(' ')}>
           {text}
         </span>
-        {subtext && <span className="block text-[11px] text-[#B8A89A] mt-0.5">{subtext}</span>}
+        <TypeBadge type={type} />
       </span>
-    </button>
+      {subtext && <span className="block text-[11px] text-[#B8A89A] mt-0.5">{subtext}</span>}
+      {done && content && (
+        <span className="block text-[11px] text-[#8B7355] mt-1 italic line-clamp-2">
+          {type === 'code' ? content : `"${content.slice(0, 80)}${content.length > 80 ? '…' : ''}"`}
+        </span>
+      )}
+    </span>
+  )
+
+  if (!isModal) {
+    return (
+      <button
+        type="button"
+        onClick={() => onToggle(id, !done)}
+        className="flex items-start gap-3 text-left w-full py-2"
+      >
+        {circle}
+        {textBlock}
+      </button>
+    )
+  }
+
+  // write / code: checkbox toggles completion; text area opens modal
+  return (
+    <div className="flex items-start gap-3 w-full py-2">
+      <button
+        type="button"
+        aria-label={done ? 'Mark incomplete' : 'Open details'}
+        onClick={() => {
+          if (done) onToggle(id, false)
+          else onOpenModal?.({ id, type, text, subtext })
+        }}
+        className="flex-shrink-0 mt-0.5"
+      >
+        {circle}
+      </button>
+      <button
+        type="button"
+        onClick={() => onOpenModal?.({ id, type, text, subtext })}
+        className="flex-1 min-w-0 text-left"
+      >
+        {textBlock}
+      </button>
+    </div>
   )
 }
 
 // ── acceptance criteria panel ─────────────────────────────────────────────────
 
 function AcPanel({
-  week, completions, onToggle, expanded, onToggleExpand,
+  week, completed, content, onToggle, onOpenModal, expanded, onToggleExpand,
 }: {
-  week: BootcampWeek; completions: Set<string>; onToggle: (id: string, v: boolean) => void;
-  expanded: boolean; onToggleExpand: () => void;
+  week: BootcampWeek
+  completed: Set<string>
+  content: Map<string, string>
+  onToggle: (id: string, v: boolean) => void
+  onOpenModal: (state: ModalState) => void
+  expanded: boolean
+  onToggleExpand: () => void
 }) {
   const total = week.acceptanceCriteria.length
-  const done = week.acceptanceCriteria.filter(a => completions.has(a.id)).length
+  const done = week.acceptanceCriteria.filter(a => completed.has(a.id)).length
 
   return (
     <div className="bg-white border-b border-[#E8E0D5]">
@@ -97,7 +174,16 @@ function AcPanel({
       {expanded && (
         <div className="px-5 pb-3 flex flex-col gap-0.5 border-t border-[#F0EBE3] pt-2">
           {week.acceptanceCriteria.map(ac => (
-            <CheckRow key={ac.id} id={ac.id} text={ac.text} done={completions.has(ac.id)} onToggle={onToggle} />
+            <CheckRow
+              key={ac.id}
+              id={ac.id}
+              text={ac.text}
+              done={completed.has(ac.id)}
+              type={ac.type}
+              content={content.get(ac.id)}
+              onToggle={onToggle}
+              onOpenModal={onOpenModal}
+            />
           ))}
         </div>
       )}
@@ -108,27 +194,28 @@ function AcPanel({
 // ── day content ───────────────────────────────────────────────────────────────
 
 function DayContent({
-  day, completions, onToggle,
+  day, completed, content, onToggle, onOpenModal,
 }: {
-  day: BootcampDay; completions: Set<string>; onToggle: (id: string, v: boolean) => void
+  day: BootcampDay
+  completed: Set<string>
+  content: Map<string, string>
+  onToggle: (id: string, v: boolean) => void
+  onOpenModal: (state: ModalState) => void
 }) {
   return (
     <div className="flex flex-col gap-3 px-4 pt-2 pb-28">
-      {/* Learning focus */}
       {day.learningFocus && (
         <div className="bg-[#FDF8F3] border border-[#E8E0D5] rounded-2xl px-4 py-3">
           <p className="text-[12px] text-[#8B7355] italic">💡 {day.learningFocus}</p>
         </div>
       )}
 
-      {/* Evening note (e.g. Run Club) */}
       {day.eveningNote && (
         <div className="bg-[#EAF2EC] rounded-xl px-3 py-2">
           <p className="text-[12px] text-[#5A8A6A] font-medium">🏃 Evening: {day.eveningNote}</p>
         </div>
       )}
 
-      {/* Schedule blocks */}
       {day.blocks.map((block, bi) => {
         const style = BLOCK_STYLES[block.name] ?? { bg: 'bg-[#F7F3EE]', text: 'text-[#8B7355]' }
         return (
@@ -146,8 +233,11 @@ function DayContent({
                   id={task.id}
                   text={task.text}
                   subtext={task.timeRange}
-                  done={completions.has(task.id)}
+                  done={completed.has(task.id)}
+                  type={task.type}
+                  content={content.get(task.id)}
                   onToggle={onToggle}
+                  onOpenModal={onOpenModal}
                 />
               ))}
             </div>
@@ -155,7 +245,6 @@ function DayContent({
         )
       })}
 
-      {/* Homework */}
       {day.homework && (
         <div className="bg-white border border-[#E8E0D5] rounded-2xl overflow-hidden">
           <div className="flex items-center justify-between px-4 py-2.5 bg-[#EEF7EE]">
@@ -177,15 +266,17 @@ function DayContent({
                 key={q.id}
                 id={q.id}
                 text={`Q${qi + 1}: ${q.text}`}
-                done={completions.has(q.id)}
+                done={completed.has(q.id)}
+                type={q.type}
+                content={content.get(q.id)}
                 onToggle={onToggle}
+                onOpenModal={onOpenModal}
               />
             ))}
           </div>
         </div>
       )}
 
-      {/* Exercises */}
       {day.exercises?.map(ex => (
         <div key={ex.number} className="bg-white border border-[#E8E0D5] rounded-2xl overflow-hidden">
           <div className="flex items-center justify-between px-4 py-2.5 bg-[#FFF3EE]">
@@ -200,8 +291,11 @@ function DayContent({
                 key={ac.id}
                 id={ac.id}
                 text={ac.text}
-                done={completions.has(ac.id)}
+                done={completed.has(ac.id)}
+                type={ac.type}
+                content={content.get(ac.id)}
                 onToggle={onToggle}
+                onOpenModal={onOpenModal}
               />
             ))}
           </div>
@@ -221,9 +315,11 @@ export default function BootcampPage() {
     return defaultDateForWeek(w, today)
   })
 
-  const [completions, setCompletions] = useState<Set<string>>(new Set())
+  const [completed, setCompleted] = useState<Set<string>>(new Set())
+  const [content, setContent] = useState<Map<string, string>>(new Map())
   const [acExpanded, setAcExpanded] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [modal, setModal] = useState<ModalState | null>(null)
 
   const week: BootcampWeek = getWeekForDate(date) ?? getNearestWeek(today)
   const day: BootcampDay | undefined = week.days.find(d => d.fullDate === date)
@@ -235,7 +331,9 @@ export default function BootcampPage() {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      setCompletions(await fetchCompletions())
+      const state = await fetchBootcampState()
+      setCompleted(state.completed)
+      setContent(state.content)
     } finally {
       setLoading(false)
     }
@@ -244,7 +342,7 @@ export default function BootcampPage() {
   useEffect(() => { load() }, [load])
 
   const handleToggle = async (itemKey: string, complete: boolean) => {
-    setCompletions(prev => {
+    setCompleted(prev => {
       const next = new Set(prev)
       if (complete) next.add(itemKey)
       else next.delete(itemKey)
@@ -253,7 +351,16 @@ export default function BootcampPage() {
     await toggleCompletion(itemKey, complete)
   }
 
-  const acDone = week.acceptanceCriteria.filter(a => completions.has(a.id)).length
+  const handleSaveContent = async (itemKey: string, contentStr: string) => {
+    setContent(prev => new Map(prev).set(itemKey, contentStr))
+    setCompleted(prev => new Set(prev).add(itemKey))
+    setModal(null)
+    await saveItemContent(itemKey, contentStr)
+  }
+
+  const handleOpenModal = (state: ModalState) => setModal(state)
+
+  const acDone = week.acceptanceCriteria.filter(a => completed.has(a.id)).length
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
@@ -261,8 +368,10 @@ export default function BootcampPage() {
       <div className="pt-14">
         <AcPanel
           week={week}
-          completions={completions}
+          completed={completed}
+          content={content}
           onToggle={handleToggle}
+          onOpenModal={handleOpenModal}
           expanded={acExpanded}
           onToggleExpand={() => setAcExpanded(e => !e)}
         />
@@ -315,7 +424,13 @@ export default function BootcampPage() {
             <div className="w-7 h-7 rounded-full border-2 border-[#E8E0D5] border-t-[#5A8A6A] animate-spin" />
           </div>
         ) : day ? (
-          <DayContent day={day} completions={completions} onToggle={handleToggle} />
+          <DayContent
+            day={day}
+            completed={completed}
+            content={content}
+            onToggle={handleToggle}
+            onOpenModal={handleOpenModal}
+          />
         ) : (
           <div className="px-5 py-12 text-center">
             <p className="text-3xl mb-3">📅</p>
@@ -324,6 +439,18 @@ export default function BootcampPage() {
           </div>
         )}
       </div>
+
+      {/* Item detail modal */}
+      {modal && (
+        <ItemDetailModal
+          type={modal.type}
+          text={modal.text}
+          subtext={modal.subtext}
+          savedContent={content.get(modal.id)}
+          onSave={contentStr => handleSaveContent(modal.id, contentStr)}
+          onClose={() => setModal(null)}
+        />
+      )}
     </div>
   )
 }

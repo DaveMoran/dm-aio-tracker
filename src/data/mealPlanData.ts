@@ -1,6 +1,6 @@
 import type { DayTargets } from '../types'
 
-export const MEAL_PLAN_ID = 'queens-marathon-meals'
+export const MEAL_PLAN_ID = 'bbbbbbbb-0000-0000-0000-000000000001'
 
 export const DEFAULT_TARGETS: DayTargets[] = [
   { day_of_week: 0, calories_min: 2100, calories_max: 2200, protein_min: 160, protein_max: 170, carbs_min: 190, carbs_max: 210, fat_min: 65, fat_max: 75 },

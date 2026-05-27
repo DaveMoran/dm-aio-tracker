@@ -1,3 +1,14 @@
+# Capacitor iOS native project (generated on Mac via `npx cap add ios`)
+# Keep ios/README.md but ignore the generated Xcode project
+ios/App/
+ios/*.xcworkspace
+ios/*.xcodeproj
+ios/Podfile
+ios/Podfile.lock
+
+# Android (if added later)
+android/
+
 # Logs
 logs
 *.log

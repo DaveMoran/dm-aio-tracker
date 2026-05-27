@@ -3,11 +3,24 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Viewport: viewport-fit=cover fills behind Dynamic Island / home indicator -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+
+    <!-- iOS native app meta tags -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <!-- black-translucent: our bg color shows through the status bar -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="DM Tracker" />
+
+    <!-- Theme color matches app background -->
     <meta name="theme-color" content="#F7F3EE" />
-    <title>Tracker</title>
+
+    <!-- Prevent phone number detection and content formatting -->
+    <meta name="format-detection" content="telephone=no, date=no, email=no, address=no" />
+
+    <title>DM Tracker</title>
   </head>
   <body>
     <div id="root"></div>

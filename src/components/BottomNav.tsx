@@ -25,6 +25,18 @@ const tabs: TabDef[] = [
     ),
   },
   {
+    id: 'routine',
+    label: 'Routine',
+    icon: (active) => (
+      <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6">
+        {/* Sun + moon split icon representing morning/evening */}
+        <circle cx="12" cy="12" r="4" stroke={active ? '#5A8A6A' : '#B8A89A'} strokeWidth="1.8" />
+        <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
+          stroke={active ? '#5A8A6A' : '#B8A89A'} strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
     id: 'lists',
     label: 'Lists',
     icon: (active) => (

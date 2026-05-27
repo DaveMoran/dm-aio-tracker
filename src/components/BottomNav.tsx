@@ -9,22 +9,6 @@ interface TabDef {
 
 const tabs: TabDef[] = [
   {
-    id: 'checklist',
-    label: 'Daily',
-    icon: (active) => (
-      <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6">
-        <path
-          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"
-          stroke={active ? '#5A8A6A' : '#B8A89A'}
-          strokeWidth="1.8"
-          strokeLinecap="round"
-        />
-        <rect x="9" y="3" width="6" height="4" rx="1" stroke={active ? '#5A8A6A' : '#B8A89A'} strokeWidth="1.8" />
-        <path d="M9 12l2 2 4-4" stroke={active ? '#5A8A6A' : '#B8A89A'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
-  },
-  {
     id: 'routine',
     label: 'Routine',
     icon: (active) => (

@@ -15,7 +15,7 @@ export interface TaskCompletion {
   completed_at: string
 }
 
-export type TabId = 'checklist' | 'lists' | 'workout' | 'food' | 'bootcamp'
+export type TabId = 'checklist' | 'lists' | 'workout' | 'food' | 'bootcamp' | 'routine'
 
 export interface Tab {
   id: TabId

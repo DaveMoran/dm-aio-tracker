@@ -5,7 +5,7 @@ import { DEFAULT_TARGETS, MEAL_PLAN_ID } from '../data/mealPlanData'
 // ── Date helpers ─────────────────────────────────────────────────────────────
 
 export function todayString(): string {
-  return new Date().toISOString().split('T')[0]
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' })
 }
 
 export function addDays(dateStr: string, n: number): string {

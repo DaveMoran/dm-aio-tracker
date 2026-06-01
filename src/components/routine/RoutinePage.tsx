@@ -6,20 +6,28 @@ import {
   createTask,
   deleteTask,
 } from '../../lib/checklistApi'
+import { todayString, addDays, formatDisplayDate } from '../../lib/mealStorage'
 import ProgressRing from '../checklist/ProgressRing'
+
+const MIN_DATE = addDays(todayString(), -730)
 
 // ── Main page ──────────────────────────────────────────────────────────────
 
 export default function RoutinePage() {
+  const [date, setDate] = useState(todayString())
   const [morning, setMorning] = useState<ChecklistTask[]>([])
   const [evening, setEvening] = useState<ChecklistTask[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [showCalendar, setShowCalendar] = useState(false)
 
-  const load = useCallback(async () => {
+  const isToday = date === todayString()
+
+  const load = useCallback(async (d: string) => {
     setError(null)
+    setLoading(true)
     try {
-      const data = await fetchChecklist()
+      const data = await fetchChecklist(d)
       setMorning(data.morning)
       setEvening(data.evening)
     } catch (e) {
@@ -30,28 +38,25 @@ export default function RoutinePage() {
     }
   }, [])
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { load() }, [load])
+  useEffect(() => { load(date) }, [date, load])
 
-  // Toggle a task — optimistic update, revert on error
   const handleToggle = async (task: ChecklistTask) => {
+    if (!isToday) return
     const newVal = !task.completed
     const setList = task.period === 'AM' ? setMorning : setEvening
 
-    // Optimistic
     setList(prev => prev.map(t => t.id === task.id ? { ...t, completed: newVal } : t))
 
     try {
-      const updated = await toggleTask(task.id, newVal)
+      const updated = await toggleTask(task.id, newVal, date)
       setList(prev => prev.map(t => t.id === task.id ? updated : t))
     } catch {
-      // Revert
       setList(prev => prev.map(t => t.id === task.id ? { ...t, completed: task.completed } : t))
     }
   }
 
-  // Add a task to a section
   const handleAdd = async (name: string, period: 'AM' | 'PM') => {
+    if (!isToday) return
     const list = period === 'AM' ? morning : evening
     const nextOrder = list.length > 0 ? Math.max(...list.map(t => t.sort_order)) + 1 : 1
 
@@ -67,23 +72,38 @@ export default function RoutinePage() {
     }
   }
 
-  // Delete a task
   const handleDelete = async (task: ChecklistTask) => {
+    if (!isToday) return
     const setList = task.period === 'AM' ? setMorning : setEvening
 
-    // Optimistic removal
     setList(prev => prev.filter(t => t.id !== task.id))
 
     try {
       await deleteTask(task.id)
     } catch {
-      // Revert
       setList(prev => {
         const already = prev.find(t => t.id === task.id)
         if (already) return prev
         return [...prev, task].sort((a, b) => a.sort_order - b.sort_order)
       })
     }
+  }
+
+  const goBack = () => {
+    if (date <= MIN_DATE) return
+    setDate(d => addDays(d, -1))
+  }
+
+  const goForward = () => {
+    if (isToday) return
+    setDate(d => addDays(d, 1))
+  }
+
+  const handleCalendarChange = (newDate: string) => {
+    if (newDate >= MIN_DATE && newDate <= todayString()) {
+      setDate(newDate)
+    }
+    setShowCalendar(false)
   }
 
   const totalTasks = morning.length + evening.length
@@ -112,7 +132,7 @@ export default function RoutinePage() {
         <p className="text-[#8B7355] text-[13px] leading-relaxed">{error}</p>
         <button
           type="button"
-          onClick={() => { setLoading(true); load() }}
+          onClick={() => load(date)}
           className="mt-2 px-5 py-2.5 bg-[#5A8A6A] text-white text-[14px] font-semibold rounded-full"
         >
           Try Again
@@ -124,40 +144,146 @@ export default function RoutinePage() {
   // ── Render ─────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex-1 overflow-y-auto pb-24">
-      {/* Header */}
-      <div className="px-5 pt-14 pb-5">
-        <p className="text-[13px] font-medium text-[#8B7355] uppercase tracking-widest mb-1">
-          Routine
-        </p>
-        <div className="flex items-center justify-between">
-          <h1 className="text-[28px] font-semibold text-[#2C1810] leading-tight" style={{ fontFamily: 'var(--font-display)' }}>
-            Morning &amp; Evening
-          </h1>
-          <ProgressRing completed={totalCompleted} total={totalTasks} />
+    <>
+      <div className="flex-1 overflow-y-auto pb-24">
+        {/* Header */}
+        <div className="px-5 pt-14 pb-5">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[13px] font-medium text-[#8B7355] uppercase tracking-widest">
+              Routine
+            </p>
+            <ProgressRing completed={totalCompleted} total={totalTasks} />
+          </div>
+
+          {/* Date navigation */}
+          <div className="flex items-center justify-between">
+            <button
+              type="button"
+              onClick={goBack}
+              disabled={date <= MIN_DATE}
+              className="w-9 h-9 rounded-full bg-white border border-[#E8E0D5] flex items-center justify-center disabled:opacity-30"
+              aria-label="Previous day"
+            >
+              <svg viewBox="0 0 8 14" fill="none" className="w-2 h-3.5">
+                <path d="M7 1L1 7l6 6" stroke="#8B7355" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowCalendar(true)}
+              className="text-center"
+              aria-label="Pick a date"
+            >
+              <p className="text-[17px] font-semibold text-[#2C1810]">{formatDisplayDate(date)}</p>
+              {isToday
+                ? <p className="text-[11px] text-[#5A8A6A] font-medium mt-0.5">Today</p>
+                : <p className="text-[11px] text-[#B8A89A] font-medium mt-0.5">View only</p>
+              }
+            </button>
+
+            <button
+              type="button"
+              onClick={goForward}
+              disabled={isToday}
+              className="w-9 h-9 rounded-full bg-white border border-[#E8E0D5] flex items-center justify-center disabled:opacity-30"
+              aria-label="Next day"
+            >
+              <svg viewBox="0 0 8 14" fill="none" className="w-2 h-3.5">
+                <path d="M1 1l6 6-6 6" stroke="#8B7355" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+          </div>
         </div>
+
+        {/* Sections */}
+        <RoutineSection
+          label="Morning"
+          emoji="☀️"
+          period="AM"
+          tasks={morning}
+          onToggle={handleToggle}
+          onAdd={handleAdd}
+          onDelete={handleDelete}
+          readonly={!isToday}
+        />
+
+        <RoutineSection
+          label="Evening"
+          emoji="🌙"
+          period="PM"
+          tasks={evening}
+          onToggle={handleToggle}
+          onAdd={handleAdd}
+          onDelete={handleDelete}
+          readonly={!isToday}
+        />
       </div>
 
-      {/* Sections */}
-      <RoutineSection
-        label="Morning"
-        emoji="☀️"
-        period="AM"
-        tasks={morning}
-        onToggle={handleToggle}
-        onAdd={handleAdd}
-        onDelete={handleDelete}
+      {/* Calendar date picker sheet */}
+      {showCalendar && (
+        <DatePickerSheet
+          value={date}
+          min={MIN_DATE}
+          max={todayString()}
+          onSelect={handleCalendarChange}
+          onDismiss={() => setShowCalendar(false)}
+        />
+      )}
+    </>
+  )
+}
+
+// ── Date picker sheet ──────────────────────────────────────────────────────
+
+interface DatePickerSheetProps {
+  value: string
+  min: string
+  max: string
+  onSelect: (date: string) => void
+  onDismiss: () => void
+}
+
+function DatePickerSheet({ value, min, max, onSelect, onDismiss }: DatePickerSheetProps) {
+  const [picked, setPicked] = useState(value)
+
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col justify-end">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/30"
+        onClick={onDismiss}
       />
 
-      <RoutineSection
-        label="Evening"
-        emoji="🌙"
-        period="PM"
-        tasks={evening}
-        onToggle={handleToggle}
-        onAdd={handleAdd}
-        onDelete={handleDelete}
-      />
+      {/* Sheet */}
+      <div className="relative bg-white rounded-t-3xl px-5 pt-5 pb-10 safe-area-bottom shadow-2xl">
+        <div className="w-10 h-1 rounded-full bg-[#E8E0D5] mx-auto mb-5" />
+        <p className="text-[15px] font-semibold text-[#2C1810] mb-4">Jump to date</p>
+        <input
+          type="date"
+          value={picked}
+          min={min}
+          max={max}
+          onChange={e => setPicked(e.target.value)}
+          className="w-full text-[16px] text-[#2C1810] bg-[#F7F3EE] rounded-xl px-4 py-3 outline-none border border-[#E8E0D5]"
+        />
+        <div className="flex gap-3 mt-5">
+          <button
+            type="button"
+            onClick={onDismiss}
+            className="flex-1 py-3 rounded-full border border-[#E8E0D5] text-[14px] font-semibold text-[#8B7355]"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={() => picked && onSelect(picked)}
+            className="flex-1 py-3 rounded-full bg-[#5A8A6A] text-[14px] font-semibold text-white"
+          >
+            Go
+          </button>
+        </div>
+      </div>
     </div>
   )
 }
@@ -172,9 +298,10 @@ interface SectionProps {
   onToggle: (task: ChecklistTask) => void
   onAdd: (name: string, period: 'AM' | 'PM') => void
   onDelete: (task: ChecklistTask) => void
+  readonly: boolean
 }
 
-function RoutineSection({ label, emoji, period, tasks, onToggle, onAdd, onDelete }: SectionProps) {
+function RoutineSection({ label, emoji, period, tasks, onToggle, onAdd, onDelete, readonly }: SectionProps) {
   const [adding, setAdding] = useState(false)
   const [newName, setNewName] = useState('')
   const [saving, setSaving] = useState(false)
@@ -211,16 +338,18 @@ function RoutineSection({ label, emoji, period, tasks, onToggle, onAdd, onDelete
         </div>
         <div className="flex items-center gap-2">
           <span className="text-[12px] text-[#B8A89A]">{done}/{tasks.length}</span>
-          <button
-            type="button"
-            onClick={() => setAdding(v => !v)}
-            className="w-6 h-6 rounded-full bg-[#EBF3ED] flex items-center justify-center transition-colors active:bg-[#5A8A6A]/20"
-            aria-label={`Add ${label} task`}
-          >
-            <svg viewBox="0 0 14 14" className="w-3.5 h-3.5" fill="none">
-              <path d="M7 2v10M2 7h10" stroke="#5A8A6A" strokeWidth="1.8" strokeLinecap="round" />
-            </svg>
-          </button>
+          {!readonly && (
+            <button
+              type="button"
+              onClick={() => setAdding(v => !v)}
+              className="w-6 h-6 rounded-full bg-[#EBF3ED] flex items-center justify-center transition-colors active:bg-[#5A8A6A]/20"
+              aria-label={`Add ${label} task`}
+            >
+              <svg viewBox="0 0 14 14" className="w-3.5 h-3.5" fill="none">
+                <path d="M7 2v10M2 7h10" stroke="#5A8A6A" strokeWidth="1.8" strokeLinecap="round" />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
 
@@ -228,7 +357,7 @@ function RoutineSection({ label, emoji, period, tasks, onToggle, onAdd, onDelete
       <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-[#E8E0D5]">
         {tasks.length === 0 && !adding && (
           <p className="px-4 py-5 text-center text-[13px] text-[#B8A89A]">
-            No tasks yet — tap + to add one
+            {readonly ? 'No tasks recorded for this day' : 'No tasks yet — tap + to add one'}
           </p>
         )}
 
@@ -238,6 +367,7 @@ function RoutineSection({ label, emoji, period, tasks, onToggle, onAdd, onDelete
               task={task}
               onToggle={() => onToggle(task)}
               onDelete={() => onDelete(task)}
+              readonly={readonly}
             />
             {(i < tasks.length - 1 || adding) && (
               <div className="mx-4 h-px bg-[#F0EBE3]" />
@@ -257,7 +387,7 @@ function RoutineSection({ label, emoji, period, tasks, onToggle, onAdd, onDelete
               onChange={e => setNewName(e.target.value)}
               onKeyDown={handleKeyDown}
               className="flex-1 text-[15px] text-[#2C1810] bg-transparent outline-none placeholder:text-[#B8A89A]"
-              style={{ fontSize: '16px' }} // prevent iOS auto-zoom
+              style={{ fontSize: '16px' }}
             />
             <button
               type="button"
@@ -287,20 +417,20 @@ interface TaskRowProps {
   task: ChecklistTask
   onToggle: () => void
   onDelete: () => void
+  readonly: boolean
 }
 
-function RoutineTaskRow({ task, onToggle, onDelete }: TaskRowProps) {
+function RoutineTaskRow({ task, onToggle, onDelete, readonly }: TaskRowProps) {
   const [showDelete, setShowDelete] = useState(false)
 
   return (
-    <div
-      className="flex items-center gap-3 px-4 py-3.5 transition-colors active:bg-[#F7F3EE]"
-    >
+    <div className="flex items-center gap-3 px-4 py-3.5 transition-colors active:bg-[#F7F3EE]">
       {/* Checkbox */}
       <button
         type="button"
-        onClick={onToggle}
-        className="flex-shrink-0"
+        onClick={readonly ? undefined : onToggle}
+        disabled={readonly}
+        className="flex-shrink-0 disabled:cursor-default"
         aria-label={task.completed ? 'Mark incomplete' : 'Mark complete'}
       >
         <span className={[
@@ -323,27 +453,28 @@ function RoutineTaskRow({ task, onToggle, onDelete }: TaskRowProps) {
             ? 'text-[#B8A89A] line-through decoration-[#B8A89A]'
             : 'text-[#2C1810]',
         ].join(' ')}
-        onClick={() => setShowDelete(v => !v)}
+        onClick={readonly ? undefined : () => setShowDelete(v => !v)}
       >
         {task.name}
       </span>
 
-      {/* Delete button — revealed on tap */}
-      {showDelete ? (
-        <button
-          type="button"
-          onClick={() => { setShowDelete(false); onDelete() }}
-          className="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-full bg-[#FDECEA] transition-colors"
-          aria-label="Delete task"
-        >
-          <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="none">
-            <path d="M2 4h12M5.5 4V3a.5.5 0 01.5-.5h3a.5.5 0 01.5.5v1M7 7.5v4M9 7.5v4M3.5 4l.8 8.5a.5.5 0 00.5.5h6.4a.5.5 0 00.5-.5L12.5 4"
-              stroke="#D4433A" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
-      ) : (
-        // Spacer to keep layout stable
-        <span className="w-7" />
+      {/* Delete button — only shown on today, revealed on tap */}
+      {!readonly && (
+        showDelete ? (
+          <button
+            type="button"
+            onClick={() => { setShowDelete(false); onDelete() }}
+            className="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-full bg-[#FDECEA] transition-colors"
+            aria-label="Delete task"
+          >
+            <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="none">
+              <path d="M2 4h12M5.5 4V3a.5.5 0 01.5-.5h3a.5.5 0 01.5.5v1M7 7.5v4M9 7.5v4M3.5 4l.8 8.5a.5.5 0 00.5.5h6.4a.5.5 0 00.5-.5L12.5 4"
+                stroke="#D4433A" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        ) : (
+          <span className="w-7" />
+        )
       )}
     </div>
   )

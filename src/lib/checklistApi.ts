@@ -15,6 +15,7 @@ export interface ChecklistTask {
   sort_order: number
   completed: boolean
   created_at: string
+  deleted_at: string | null
 }
 
 interface ApiResponse<T> {
@@ -41,19 +42,19 @@ async function request<T>(
 
 // ── Public API ─────────────────────────────────────────────────────────────
 
-/** GET /api/v1/checklist — returns tasks grouped by period */
-export async function fetchChecklist(): Promise<{ morning: ChecklistTask[]; evening: ChecklistTask[] }> {
+/** GET /api/v1/checklist?date=YYYY-MM-DD — returns tasks grouped by period for the given date */
+export async function fetchChecklist(date: string): Promise<{ morning: ChecklistTask[]; evening: ChecklistTask[] }> {
   const body = await request<ApiResponse<{ morning: ChecklistTask[]; evening: ChecklistTask[] }>>(
-    '/api/v1/checklist',
+    `/api/v1/checklist?date=${date}`,
   )
   return body.data
 }
 
-/** PATCH /api/v1/checklist/:id — toggle completed state */
-export async function toggleTask(id: string, completed: boolean): Promise<ChecklistTask> {
+/** PATCH /api/v1/checklist/:id — toggle completed state for today only */
+export async function toggleTask(id: string, completed: boolean, date: string): Promise<ChecklistTask> {
   const body = await request<ApiResponse<ChecklistTask>>(
     `/api/v1/checklist/${id}`,
-    { method: 'PATCH', body: JSON.stringify({ completed }) },
+    { method: 'PATCH', body: JSON.stringify({ completed, date }) },
   )
   return body.data
 }
@@ -71,7 +72,7 @@ export async function createTask(
   return body.data
 }
 
-/** DELETE /api/v1/checklist/:id — delete a task */
+/** DELETE /api/v1/checklist/:id — soft-delete a task */
 export async function deleteTask(id: string): Promise<void> {
   await request<void>(`/api/v1/checklist/${id}`, { method: 'DELETE' })
 }

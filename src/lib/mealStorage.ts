@@ -92,7 +92,7 @@ export async function saveLog(
   values: { calories: number | null; protein: number | null; carbs: number | null; fat: number | null },
 ): Promise<void> {
   if (isSupabaseConfigured && supabase) {
-    await supabase.from('macro_logs').upsert({ date, ...values, logged_at: new Date().toISOString() }, { onConflict: 'date' })
+    await supabase.from('macro_logs').upsert({ date, ...values, logged_at: new Date().toISOString() }, { onConflict: 'date,user_id' })
     return
   }
   const logs = getLocalLogs().filter(l => l.date !== date)

@@ -1,12 +1,10 @@
-/**
- * checklistApi.ts
- *
- * Thin fetch wrapper for the morning/evening checklist REST API.
- * Base URL is read from VITE_API_URL — swap the .env.local value once the
- * real Railway URL is available; no code changes required.
- */
-
 const BASE = import.meta.env.VITE_API_URL ?? ''
+
+let _accessToken: string | null = null
+
+export function setAccessToken(token: string | null) {
+  _accessToken = token
+}
 
 export interface ChecklistTask {
   id: string
@@ -28,21 +26,23 @@ async function request<T>(
   path: string,
   options?: RequestInit,
 ): Promise<T> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  if (_accessToken) headers['Authorization'] = `Bearer ${_accessToken}`
+
   const res = await fetch(`${BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     ...options,
   })
   if (!res.ok) {
     throw new Error(`API error ${res.status}: ${res.statusText}`)
   }
-  // 204 No Content — return undefined cast to T
   if (res.status === 204) return undefined as unknown as T
   return res.json() as Promise<T>
 }
 
 // ── Public API ─────────────────────────────────────────────────────────────
 
-/** GET /api/v1/checklist?date=YYYY-MM-DD — returns tasks grouped by period for the given date */
+/** GET /api/v1/checklist?date=YYYY-MM-DD */
 export async function fetchChecklist(date: string): Promise<{ morning: ChecklistTask[]; evening: ChecklistTask[] }> {
   const body = await request<ApiResponse<{ morning: ChecklistTask[]; evening: ChecklistTask[] }>>(
     `/api/v1/checklist?date=${date}`,

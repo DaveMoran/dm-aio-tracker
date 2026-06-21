@@ -50,7 +50,7 @@ export async function toggleCompletion(itemKey: string, complete: boolean): Prom
   if (isSupabaseConfigured && supabase) {
     if (complete) {
       await supabase.from('bootcamp_completions')
-        .upsert({ item_key: itemKey }, { onConflict: 'item_key' })
+        .upsert({ item_key: itemKey }, { onConflict: 'item_key,user_id' })
     } else {
       await supabase.from('bootcamp_completions')
         .delete().eq('item_key', itemKey)
@@ -67,9 +67,9 @@ export async function saveItemContent(itemKey: string, contentStr: string): Prom
   if (isSupabaseConfigured && supabase) {
     await Promise.all([
       supabase.from('bootcamp_content')
-        .upsert({ item_key: itemKey, content: contentStr, updated_at: new Date().toISOString() }, { onConflict: 'item_key' }),
+        .upsert({ item_key: itemKey, content: contentStr, updated_at: new Date().toISOString() }, { onConflict: 'item_key,user_id' }),
       supabase.from('bootcamp_completions')
-        .upsert({ item_key: itemKey }, { onConflict: 'item_key' }),
+        .upsert({ item_key: itemKey }, { onConflict: 'item_key,user_id' }),
     ])
     return
   }

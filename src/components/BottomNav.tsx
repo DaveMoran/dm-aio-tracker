@@ -99,9 +99,10 @@ const tabs: TabDef[] = [
 interface Props {
   active: TabId
   onChange: (tab: TabId) => void
+  onSignOut?: () => void
 }
 
-export default function BottomNav({ active, onChange }: Props) {
+export default function BottomNav({ active, onChange, onSignOut }: Props) {
   return (
     <nav
       className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-white border-t border-[#E8E0D5] pb-safe"
@@ -129,6 +130,21 @@ export default function BottomNav({ active, onChange }: Props) {
             </button>
           )
         })}
+        {onSignOut && (
+          <button
+            type="button"
+            onClick={onSignOut}
+            title="Sign out"
+            className="flex flex-col items-center gap-0.5 pt-2 pb-1 px-3"
+          >
+            <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6">
+              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" stroke="#B8A89A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              <polyline points="16 17 21 12 16 7" stroke="#B8A89A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              <line x1="21" y1="12" x2="9" y2="12" stroke="#B8A89A" strokeWidth="1.8" strokeLinecap="round" />
+            </svg>
+            <span className="text-[10px] font-medium text-[#B8A89A]">Out</span>
+          </button>
+        )}
       </div>
     </nav>
   )

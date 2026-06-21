@@ -106,7 +106,7 @@ export async function toggleItemCompletion(scheduleItemId: string, date: string,
   if (isSupabaseConfigured && supabase) {
     if (complete) {
       await supabase.from('workout_completions')
-        .upsert({ schedule_item_id: scheduleItemId, date }, { onConflict: 'schedule_item_id,date' })
+        .upsert({ schedule_item_id: scheduleItemId, date }, { onConflict: 'schedule_item_id,date,user_id' })
     } else {
       await supabase.from('workout_completions')
         .delete().eq('schedule_item_id', scheduleItemId).eq('date', date)
@@ -153,7 +153,7 @@ export async function toggleExerciseCompletion(exerciseId: string, date: string,
   if (isSupabaseConfigured && supabase) {
     if (complete) {
       await supabase.from('workout_exercise_completions')
-        .upsert({ exercise_id: exerciseId, date }, { onConflict: 'exercise_id,date' })
+        .upsert({ exercise_id: exerciseId, date }, { onConflict: 'exercise_id,date,user_id' })
     } else {
       await supabase.from('workout_exercise_completions')
         .delete().eq('exercise_id', exerciseId).eq('date', date)

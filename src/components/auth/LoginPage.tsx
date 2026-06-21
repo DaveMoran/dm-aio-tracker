@@ -28,6 +28,8 @@ export default function LoginPage() {
           setMode('signin')
         }
       }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong')
     } finally {
       setLoading(false)
     }

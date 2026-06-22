@@ -1,4 +1,5 @@
-import { supabase, isSupabaseConfigured } from './supabase'
+import { isSupabaseConfigured } from './supabase'
+import * as api from './bootcampApi'
 
 const LS_COMPLETIONS_KEY = 'dm_bootcamp_completions'
 const LS_CONTENT_KEY = 'dm_bootcamp_content'
@@ -28,16 +29,14 @@ export interface BootcampState {
 }
 
 export async function fetchBootcampState(): Promise<BootcampState> {
-  if (isSupabaseConfigured && supabase) {
-    const [completionsRes, contentRes] = await Promise.all([
-      supabase.from('bootcamp_completions').select('item_key'),
-      supabase.from('bootcamp_content').select('item_key, content'),
+  if (isSupabaseConfigured) {
+    const [completions, content] = await Promise.all([
+      api.fetchCompletions(),
+      api.fetchContent(),
     ])
-    if (completionsRes.error) throw completionsRes.error
-    if (contentRes.error) throw contentRes.error
     return {
-      completed: new Set((completionsRes.data as { item_key: string }[]).map(r => r.item_key)),
-      content: new Map((contentRes.data as { item_key: string; content: string }[]).map(r => [r.item_key, r.content])),
+      completed: new Set(completions.map(r => r.item_key)),
+      content: new Map(content.map(r => [r.item_key, r.content])),
     }
   }
   return {
@@ -47,14 +46,8 @@ export async function fetchBootcampState(): Promise<BootcampState> {
 }
 
 export async function toggleCompletion(itemKey: string, complete: boolean): Promise<void> {
-  if (isSupabaseConfigured && supabase) {
-    if (complete) {
-      await supabase.from('bootcamp_completions')
-        .upsert({ item_key: itemKey }, { onConflict: 'item_key,user_id' })
-    } else {
-      await supabase.from('bootcamp_completions')
-        .delete().eq('item_key', itemKey)
-    }
+  if (isSupabaseConfigured) {
+    await api.toggleCompletion(itemKey, complete)
     return
   }
   const s = getLocalCompletions()
@@ -64,13 +57,8 @@ export async function toggleCompletion(itemKey: string, complete: boolean): Prom
 }
 
 export async function saveItemContent(itemKey: string, contentStr: string): Promise<void> {
-  if (isSupabaseConfigured && supabase) {
-    await Promise.all([
-      supabase.from('bootcamp_content')
-        .upsert({ item_key: itemKey, content: contentStr, updated_at: new Date().toISOString() }, { onConflict: 'item_key,user_id' }),
-      supabase.from('bootcamp_completions')
-        .upsert({ item_key: itemKey }, { onConflict: 'item_key,user_id' }),
-    ])
+  if (isSupabaseConfigured) {
+    await api.saveContent(itemKey, contentStr)
     return
   }
   const m = getLocalContent()

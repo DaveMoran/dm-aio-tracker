@@ -77,6 +77,14 @@ export interface WorkoutExerciseCompletion {
   completed_at: string
 }
 
+// Week summary (for weekly overview)
+export interface WeekSummary {
+  week_number: number
+  total: number
+  completed: number
+  goal: string | null
+}
+
 // Nutrition
 export interface DayTargets {
   day_of_week: number // 0=Mon … 6=Sun

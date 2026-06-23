@@ -3,6 +3,7 @@ import type { TabId } from './types'
 import type { Session } from './lib/auth'
 import { onAuthStateChange, signOut } from './lib/auth'
 import { setAccessToken } from './lib/checklistApi'
+import { setBootcampAccessToken } from './lib/bootcampApi'
 import BottomNav from './components/BottomNav'
 import LoginPage from './components/auth/LoginPage'
 import RoutinePage from './components/routine/RoutinePage'
@@ -19,6 +20,7 @@ export default function App() {
     const { data: { subscription } } = onAuthStateChange((s) => {
       setSession(s)
       setAccessToken(s?.access_token ?? null)
+      setBootcampAccessToken(s?.access_token ?? null)
     })
     return () => subscription.unsubscribe()
   }, [])

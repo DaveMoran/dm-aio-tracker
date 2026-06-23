@@ -134,7 +134,7 @@ function CheckRow({
   )
 }
 
-// ── acceptance criteria panel ─────────────────────────────────────────────────
+// ── acceptance criteria panel ────────────────────────────────────────────────���
 
 function AcPanel({
   week, completed, content, onToggle, onOpenModal, expanded, onToggleExpand,
@@ -310,36 +310,40 @@ function DayContent({
 export default function BootcampPage() {
   const today = todayString()
 
-  const [date, setDate] = useState(() => {
-    const w = getWeekForDate(today) ?? getNearestWeek(today)
-    return defaultDateForWeek(w, today)
-  })
-
+  const [week, setWeek] = useState<BootcampWeek | null>(null)
+  const [date, setDate] = useState(today)
   const [completed, setCompleted] = useState<Set<string>>(new Set())
   const [content, setContent] = useState<Map<string, string>>(new Map())
   const [acExpanded, setAcExpanded] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [modal, setModal] = useState<ModalState | null>(null)
 
-  const week: BootcampWeek = getWeekForDate(date) ?? getNearestWeek(today)
-  const day: BootcampDay | undefined = week.days.find(d => d.fullDate === date)
+  const loadCurriculum = useCallback(async () => {
+    const w = await getWeekForDate(today) ?? await getNearestWeek(today)
+    setWeek(w)
+    setDate(defaultDateForWeek(w, today))
+  }, [today])
 
-  const canGoPrev = date > week.startDate
-  const canGoNext = date < week.endDate
-  const isToday = date === today
-
-  const load = useCallback(async () => {
-    setLoading(true)
-    try {
-      const state = await fetchBootcampState()
-      setCompleted(state.completed)
-      setContent(state.content)
-    } finally {
-      setLoading(false)
-    }
+  const loadState = useCallback(async () => {
+    const state = await fetchBootcampState()
+    setCompleted(state.completed)
+    setContent(state.content)
   }, [])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => {
+    setLoading(true)
+    setError(null)
+    Promise.all([loadCurriculum(), loadState()])
+      .catch((e) => setError(e instanceof Error ? e.message : 'Failed to load curriculum'))
+      .finally(() => setLoading(false))
+  }, [loadCurriculum, loadState])
+
+  const day: BootcampDay | undefined = week?.days.find(d => d.fullDate === date)
+
+  const canGoPrev = week ? date > week.startDate : false
+  const canGoNext = week ? date < week.endDate : false
+  const isToday = date === today
 
   const handleToggle = async (itemKey: string, complete: boolean) => {
     setCompleted(prev => {
@@ -359,6 +363,28 @@ export default function BootcampPage() {
   }
 
   const handleOpenModal = (state: ModalState) => setModal(state)
+
+  if (loading) {
+    return (
+      <div className="flex flex-col flex-1 min-h-0 pt-14">
+        <div className="flex items-center justify-center h-32">
+          <div className="w-7 h-7 rounded-full border-2 border-[#E8E0D5] border-t-[#5A8A6A] animate-spin" />
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !week) {
+    return (
+      <div className="flex flex-col flex-1 min-h-0 pt-14">
+        <div className="px-5 py-12 text-center">
+          <p className="text-3xl mb-3">⚠️</p>
+          <p className="text-[15px] font-semibold text-[#2C1810]">Unable to load curriculum</p>
+          <p className="text-[13px] text-[#B8A89A] mt-1">{error ?? 'No curriculum data available'}</p>
+        </div>
+      </div>
+    )
+  }
 
   const acDone = week.acceptanceCriteria.filter(a => completed.has(a.id)).length
 
@@ -419,11 +445,7 @@ export default function BootcampPage() {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
-        {loading ? (
-          <div className="flex items-center justify-center h-32">
-            <div className="w-7 h-7 rounded-full border-2 border-[#E8E0D5] border-t-[#5A8A6A] animate-spin" />
-          </div>
-        ) : day ? (
+        {day ? (
           <DayContent
             day={day}
             completed={completed}

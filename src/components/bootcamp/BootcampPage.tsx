@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import type { BootcampDay, BootcampWeek, BootcampItemType } from '../../data/bootcampData'
 import { getWeekForDate, getNearestWeek, defaultDateForWeek } from '../../data/bootcampData'
 import { fetchBootcampState, toggleCompletion, saveItemContent } from '../../lib/bootcampStorage'
+import { useMediaQuery, TABLET_QUERY } from '../../lib/useMediaQuery'
 import ItemDetailModal from './ItemDetailModal'
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -203,7 +204,7 @@ function DayContent({
   onOpenModal: (state: ModalState) => void
 }) {
   return (
-    <div className="flex flex-col gap-3 px-4 pt-2 pb-28">
+    <div className="flex flex-col gap-3 px-4 pt-2 pb-28 md:pb-8">
       {day.learningFocus && (
         <div className="bg-[#FDF8F3] border border-[#E8E0D5] rounded-2xl px-4 py-3">
           <p className="text-[12px] text-[#8B7355] italic">💡 {day.learningFocus}</p>
@@ -309,12 +310,14 @@ function DayContent({
 
 export default function BootcampPage() {
   const today = todayString()
+  const isTablet = useMediaQuery(TABLET_QUERY)
 
   const [week, setWeek] = useState<BootcampWeek | null>(null)
   const [date, setDate] = useState(today)
   const [completed, setCompleted] = useState<Set<string>>(new Set())
   const [content, setContent] = useState<Map<string, string>>(new Map())
-  const [acExpanded, setAcExpanded] = useState(false)
+  // Acceptance criteria start expanded on tablet (it's the left-pane reference).
+  const [acExpanded, setAcExpanded] = useState(() => window.matchMedia(TABLET_QUERY).matches)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [modal, setModal] = useState<ModalState | null>(null)
@@ -366,7 +369,7 @@ export default function BootcampPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col flex-1 min-h-0 pt-14">
+      <div className="flex flex-col flex-1 min-h-0 pt-14 md:pt-8">
         <div className="flex items-center justify-center h-32">
           <div className="w-7 h-7 rounded-full border-2 border-[#E8E0D5] border-t-[#5A8A6A] animate-spin" />
         </div>
@@ -376,7 +379,7 @@ export default function BootcampPage() {
 
   if (error || !week) {
     return (
-      <div className="flex flex-col flex-1 min-h-0 pt-14">
+      <div className="flex flex-col flex-1 min-h-0 pt-14 md:pt-8">
         <div className="px-5 py-12 text-center">
           <p className="text-3xl mb-3">⚠️</p>
           <p className="text-[15px] font-semibold text-[#2C1810]">Unable to load curriculum</p>
@@ -388,79 +391,144 @@ export default function BootcampPage() {
 
   const acDone = week.acceptanceCriteria.filter(a => completed.has(a.id)).length
 
+  const dayMeta = (
+    <div className="flex items-center gap-2">
+      {isToday && <span className="text-[11px] text-[#5A8A6A] font-medium">Today</span>}
+      {day && <span className="text-[11px] text-[#B8A89A]">{day.hours}h</span>}
+      {acDone === week.acceptanceCriteria.length && (
+        <span className="text-[11px] text-[#5A8A6A] font-semibold">Week complete 🎉</span>
+      )}
+    </div>
+  )
+
+  const dayContent = day ? (
+    <DayContent
+      day={day}
+      completed={completed}
+      content={content}
+      onToggle={handleToggle}
+      onOpenModal={handleOpenModal}
+    />
+  ) : (
+    <div className="px-5 py-12 text-center">
+      <p className="text-3xl mb-3">📅</p>
+      <p className="text-[15px] font-semibold text-[#2C1810]">No content for this day</p>
+      <p className="text-[13px] text-[#B8A89A] mt-1">Week {week.weekNumber} runs {week.dates}</p>
+    </div>
+  )
+
   return (
     <div className="flex flex-col flex-1 min-h-0">
-      {/* Acceptance criteria panel — always visible at top */}
-      <div className="pt-14">
-        <AcPanel
-          week={week}
-          completed={completed}
-          content={content}
-          onToggle={handleToggle}
-          onOpenModal={handleOpenModal}
-          expanded={acExpanded}
-          onToggleExpand={() => setAcExpanded(e => !e)}
-        />
-      </div>
-
-      {/* Date navigation */}
-      <div className="px-5 py-3 border-b border-[#F0EBE3]">
-        <div className="flex items-center justify-between">
-          <button
-            type="button"
-            onClick={() => setDate(d => addDays(d, -1))}
-            disabled={!canGoPrev}
-            className="w-9 h-9 rounded-full bg-white border border-[#E8E0D5] flex items-center justify-center disabled:opacity-30"
-          >
-            <svg viewBox="0 0 8 14" fill="none" className="w-2 h-3.5">
-              <path d="M7 1L1 7l6 6" stroke="#8B7355" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
-
-          <div className="text-center">
-            <p className="text-[17px] font-semibold text-[#2C1810]">{formatDate(date)}</p>
-            <div className="flex items-center justify-center gap-2 mt-0.5">
-              {isToday && <span className="text-[11px] text-[#5A8A6A] font-medium">Today</span>}
-              {day && (
-                <span className="text-[11px] text-[#B8A89A]">{day.hours}h</span>
-              )}
-              {acDone === week.acceptanceCriteria.length && (
-                <span className="text-[11px] text-[#5A8A6A] font-semibold">Week complete 🎉</span>
-              )}
+      {isTablet ? (
+        <div className="flex flex-1 min-h-0">
+          {/* Left pane: acceptance criteria + vertical day picker */}
+          <div className="w-2/5 max-w-sm shrink-0 border-r border-[#E8E0D5] flex flex-col min-h-0 overflow-y-auto pt-8">
+            <AcPanel
+              week={week}
+              completed={completed}
+              content={content}
+              onToggle={handleToggle}
+              onOpenModal={handleOpenModal}
+              expanded={acExpanded}
+              onToggleExpand={() => setAcExpanded(e => !e)}
+            />
+            <div className="px-3 py-3">
+              <p className="px-2 pb-2 text-[11px] font-semibold text-[#B8A89A] uppercase tracking-widest">
+                Week {week.weekNumber} · {week.dates}
+              </p>
+              <div className="flex flex-col gap-1">
+                {week.days.map(d => {
+                  const sel = d.fullDate === date
+                  return (
+                    <button
+                      key={d.fullDate}
+                      type="button"
+                      onClick={() => setDate(d.fullDate)}
+                      className={[
+                        'flex items-center justify-between px-3 py-2.5 rounded-xl text-left transition-colors',
+                        sel ? 'bg-[#EBF3ED]' : 'hover:bg-[#F7F3EE]',
+                      ].join(' ')}
+                    >
+                      <span className={['text-[14px] font-medium', sel ? 'text-[#5A8A6A]' : 'text-[#2C1810]'].join(' ')}>
+                        {d.name}
+                        {d.fullDate === today && <span className="ml-1.5 text-[11px] text-[#5A8A6A] font-semibold">Today</span>}
+                      </span>
+                      <span className="text-[11px] text-[#B8A89A]">{d.hours}h</span>
+                    </button>
+                  )
+                })}
+              </div>
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setDate(d => addDays(d, 1))}
-            disabled={!canGoNext}
-            className="w-9 h-9 rounded-full bg-white border border-[#E8E0D5] flex items-center justify-center disabled:opacity-30"
-          >
-            <svg viewBox="0 0 8 14" fill="none" className="w-2 h-3.5">
-              <path d="M1 1l6 6-6 6" stroke="#8B7355" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto">
-        {day ? (
-          <DayContent
-            day={day}
-            completed={completed}
-            content={content}
-            onToggle={handleToggle}
-            onOpenModal={handleOpenModal}
-          />
-        ) : (
-          <div className="px-5 py-12 text-center">
-            <p className="text-3xl mb-3">📅</p>
-            <p className="text-[15px] font-semibold text-[#2C1810]">No content for this day</p>
-            <p className="text-[13px] text-[#B8A89A] mt-1">Week {week.weekNumber} runs {week.dates}</p>
+          {/* Right pane: selected day content */}
+          <div className="flex-1 min-w-0 flex flex-col min-h-0">
+            <div className="px-5 pt-8 pb-3 border-b border-[#F0EBE3]">
+              <p className="text-[20px] font-semibold text-[#2C1810]">{formatDate(date)}</p>
+              {dayMeta}
+            </div>
+            <div className="flex-1 overflow-y-auto">{dayContent}</div>
           </div>
-        )}
-      </div>
+        </div>
+      ) : (
+        <>
+          {/* Acceptance criteria panel — always visible at top */}
+          <div className="pt-14">
+            <AcPanel
+              week={week}
+              completed={completed}
+              content={content}
+              onToggle={handleToggle}
+              onOpenModal={handleOpenModal}
+              expanded={acExpanded}
+              onToggleExpand={() => setAcExpanded(e => !e)}
+            />
+          </div>
+
+          {/* Date navigation */}
+          <div className="px-5 py-3 border-b border-[#F0EBE3]">
+            <div className="flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => setDate(d => addDays(d, -1))}
+                disabled={!canGoPrev}
+                className="w-9 h-9 rounded-full bg-white border border-[#E8E0D5] flex items-center justify-center disabled:opacity-30"
+              >
+                <svg viewBox="0 0 8 14" fill="none" className="w-2 h-3.5">
+                  <path d="M7 1L1 7l6 6" stroke="#8B7355" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+
+              <div className="text-center">
+                <p className="text-[17px] font-semibold text-[#2C1810]">{formatDate(date)}</p>
+                <div className="flex items-center justify-center gap-2 mt-0.5">
+                  {isToday && <span className="text-[11px] text-[#5A8A6A] font-medium">Today</span>}
+                  {day && (
+                    <span className="text-[11px] text-[#B8A89A]">{day.hours}h</span>
+                  )}
+                  {acDone === week.acceptanceCriteria.length && (
+                    <span className="text-[11px] text-[#5A8A6A] font-semibold">Week complete 🎉</span>
+                  )}
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setDate(d => addDays(d, 1))}
+                disabled={!canGoNext}
+                className="w-9 h-9 rounded-full bg-white border border-[#E8E0D5] flex items-center justify-center disabled:opacity-30"
+              >
+                <svg viewBox="0 0 8 14" fill="none" className="w-2 h-3.5">
+                  <path d="M1 1l6 6-6 6" stroke="#8B7355" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto">{dayContent}</div>
+        </>
+      )}
 
       {/* Item detail modal */}
       {modal && (

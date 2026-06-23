@@ -1,4 +1,4 @@
-export type TabId = 'routine' | 'lists' | 'workout' | 'food' | 'bootcamp'
+export type TabId = 'dashboard' | 'routine' | 'lists' | 'workout' | 'food' | 'bootcamp'
 
 export interface Tab {
   id: TabId

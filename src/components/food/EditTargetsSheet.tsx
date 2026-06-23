@@ -27,9 +27,10 @@ export default function EditTargetsSheet({ targets, onSave, onCancel }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-[#FDF6F0]">
+    <div className="fixed inset-0 z-50 flex flex-col bg-[#FDF6F0] md:bg-black/40 md:items-center md:justify-center md:p-6">
+      <div className="flex flex-col flex-1 w-full bg-[#FDF6F0] md:flex-none md:w-full md:max-w-lg md:max-h-[85vh] md:rounded-3xl md:overflow-hidden md:shadow-2xl">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 pt-14 pb-4 border-b border-[#E8E0D5]">
+      <div className="flex items-center justify-between px-5 pt-14 md:pt-4 pb-4 border-b border-[#E8E0D5]">
         <button type="button" onClick={onCancel} className="text-[14px] text-[#8B7355]">
           Cancel
         </button>
@@ -73,6 +74,7 @@ export default function EditTargetsSheet({ targets, onSave, onCancel }: Props) {
             </div>
           </div>
         ))}
+      </div>
       </div>
     </div>
   )

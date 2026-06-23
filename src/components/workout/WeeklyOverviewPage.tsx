@@ -7,9 +7,11 @@ import { PLAN_START } from '../../data/workoutPlanData'
 
 interface Props {
   onSelectWeek: (weekNumber: number) => void
+  /** Week currently shown in the detail pane (tablet dual-pane only). */
+  selectedWeek?: number | null
 }
 
-export default function WeeklyOverviewPage({ onSelectWeek }: Props) {
+export default function WeeklyOverviewPage({ onSelectWeek, selectedWeek }: Props) {
   const [summaries, setSummaries] = useState<WeekSummary[]>([])
   const [loading, setLoading] = useState(true)
   const currentWeekRef = useRef<HTMLButtonElement>(null)
@@ -40,12 +42,12 @@ export default function WeeklyOverviewPage({ onSelectWeek }: Props) {
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
-      <div className="px-5 pt-14 pb-3">
+      <div className="px-5 pt-14 pb-3 md:pt-8">
         <p className="text-[13px] font-medium text-[#8B7355] uppercase tracking-widest">Fitness</p>
         <p className="text-[20px] font-semibold text-[#2C1810] mt-1">Weekly Overview</p>
       </div>
 
-      <div className="flex-1 overflow-y-auto pb-28">
+      <div className="flex-1 overflow-y-auto pb-28 md:pb-8">
         {loading ? (
           <div className="flex items-center justify-center h-32">
             <div className="w-7 h-7 rounded-full border-2 border-[#E8E0D5] border-t-[#5A8A6A] animate-spin" />
@@ -54,6 +56,7 @@ export default function WeeklyOverviewPage({ onSelectWeek }: Props) {
           <div className="px-4 flex flex-col gap-2.5">
             {summaries.map(s => {
               const isCurrent = s.week_number === currentWeek
+              const isSelected = s.week_number === selectedWeek
               const isPast = s.week_number < currentWeek
               const allDone = s.total > 0 && s.completed >= s.total
               const pct = s.total > 0 ? Math.round((s.completed / s.total) * 100) : 0
@@ -66,9 +69,11 @@ export default function WeeklyOverviewPage({ onSelectWeek }: Props) {
                   onClick={() => onSelectWeek(s.week_number)}
                   className={[
                     'w-full text-left rounded-2xl border px-4 py-3.5 transition-colors',
-                    isCurrent
-                      ? 'bg-white border-[#5A8A6A] border-l-4'
-                      : 'bg-white border-[#E8E0D5]',
+                    isSelected
+                      ? 'bg-[#EBF3ED] border-[#5A8A6A]'
+                      : isCurrent
+                        ? 'bg-white border-[#5A8A6A] border-l-4'
+                        : 'bg-white border-[#E8E0D5]',
                   ].join(' ')}
                 >
                   <div className="flex items-center justify-between mb-1">

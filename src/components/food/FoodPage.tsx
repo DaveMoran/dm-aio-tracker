@@ -60,7 +60,7 @@ export default function FoodPage() {
     <>
       <div className="flex flex-col flex-1 min-h-0">
         {/* Header */}
-        <div className="px-5 pt-14 pb-3">
+        <div className="px-5 pt-14 pb-3 md:pt-8 md:max-w-3xl md:mx-auto md:w-full">
           <div className="flex items-center justify-between mb-1">
             <p className="text-[13px] font-medium text-[#8B7355] uppercase tracking-widest">Nutrition</p>
             <button
@@ -102,13 +102,13 @@ export default function FoodPage() {
         </div>
 
         {/* Macro inputs */}
-        <div className="flex-1 overflow-y-auto pb-28 px-4">
+        <div className="flex-1 overflow-y-auto pb-28 md:pb-8 px-4">
           {loading ? (
             <div className="flex items-center justify-center h-32">
               <div className="w-7 h-7 rounded-full border-2 border-[#E8E0D5] border-t-[#5A8A6A] animate-spin" />
             </div>
           ) : targets ? (
-            <div className="flex flex-col gap-3 mt-1">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-1 md:max-w-3xl md:mx-auto md:w-full">
               <MacroInputRow
                 label="Calories"
                 unit="kcal"
@@ -143,7 +143,7 @@ export default function FoodPage() {
               />
 
               {/* Legend */}
-              <div className="flex items-center justify-center gap-4 pt-1 pb-2">
+              <div className="flex items-center justify-center gap-4 pt-1 pb-2 md:col-span-2">
                 <span className="flex items-center gap-1.5 text-[11px] text-[#C8903A]">
                   <span className="w-2 h-2 rounded-full bg-[#C8903A]" /> Under
                 </span>

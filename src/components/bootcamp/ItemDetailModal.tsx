@@ -21,9 +21,10 @@ export default function ItemDetailModal({ type, text, subtext, savedContent, onS
   const showError = isCode && trimmed.length > 0 && !isValid
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-[#F7F3EE]">
+    <div className="fixed inset-0 z-50 flex flex-col bg-[#F7F3EE] md:bg-black/40 md:items-center md:justify-center md:p-6">
+      <div className="flex flex-col flex-1 w-full bg-[#F7F3EE] md:flex-none md:w-full md:max-w-lg md:max-h-[85vh] md:rounded-3xl md:overflow-hidden md:shadow-2xl">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 pt-12 pb-4 border-b border-[#E8E0D5] bg-white">
+      <div className="flex items-center justify-between px-5 pt-12 md:pt-4 pb-4 border-b border-[#E8E0D5] bg-white">
         <button
           type="button"
           onClick={onClose}
@@ -89,6 +90,7 @@ export default function ItemDetailModal({ type, text, subtext, savedContent, onS
             />
           </div>
         )}
+      </div>
       </div>
     </div>
   )

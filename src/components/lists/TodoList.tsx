@@ -102,7 +102,8 @@ export default function TodoList() {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto pb-32">
+    <div className="relative flex-1 flex flex-col min-h-0">
+      <div className="flex-1 overflow-y-auto pb-32 md:pb-6">
       {/* Filters + sort */}
       <div className="px-4 py-3 flex items-center gap-2">
         <div className="flex gap-2 flex-1 overflow-x-auto no-scrollbar">
@@ -192,11 +193,13 @@ export default function TodoList() {
         )}
       </div>
 
+      </div>
+
       {/* FAB */}
       <button
         type="button"
         onClick={() => setSheet({ open: true })}
-        className="fixed bottom-24 right-5 w-14 h-14 bg-[#5A8A6A] rounded-full flex items-center justify-center"
+        className="fixed bottom-24 right-5 md:absolute md:bottom-6 md:right-6 w-14 h-14 bg-[#5A8A6A] rounded-full flex items-center justify-center"
         style={{ boxShadow: '0 4px 16px rgba(90,138,106,0.4)' }}
       >
         <svg viewBox="0 0 24 24" className="w-7 h-7" fill="none">

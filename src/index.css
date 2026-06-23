@@ -42,8 +42,6 @@ body {
 #root {
   display: flex;
   flex-direction: column;
-  max-width: 430px;
-  margin: 0 auto;
   min-height: 100dvh;
   position: relative;
 }

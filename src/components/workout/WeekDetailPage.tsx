@@ -95,12 +95,12 @@ export default function WeekDetailPage({ weekNumber, onBack }: Props) {
   return (
     <div className="flex flex-col flex-1 min-h-0">
       {/* Header */}
-      <div className="px-5 pt-14 pb-3">
+      <div className="px-5 pt-14 pb-3 md:pt-8">
         <div className="flex items-center gap-3 mb-2">
           <button
             type="button"
             onClick={onBack}
-            className="w-9 h-9 rounded-full bg-white border border-[#E8E0D5] flex items-center justify-center"
+            className="w-9 h-9 rounded-full bg-white border border-[#E8E0D5] flex items-center justify-center md:hidden"
           >
             <svg viewBox="0 0 8 14" fill="none" className="w-2 h-3.5">
               <path d="M7 1L1 7l6 6" stroke="#8B7355" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
@@ -118,7 +118,7 @@ export default function WeekDetailPage({ weekNumber, onBack }: Props) {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto pb-28">
+      <div className="flex-1 overflow-y-auto pb-28 md:pb-8">
         {loading ? (
           <div className="flex items-center justify-center h-32">
             <div className="w-7 h-7 rounded-full border-2 border-[#E8E0D5] border-t-[#5A8A6A] animate-spin" />

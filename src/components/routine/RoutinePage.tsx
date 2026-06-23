@@ -145,9 +145,10 @@ export default function RoutinePage() {
 
   return (
     <>
-      <div className="flex-1 overflow-y-auto pb-24">
+      <div className="flex-1 overflow-y-auto pb-24 md:pb-8">
+        <div className="md:max-w-4xl md:mx-auto md:w-full">
         {/* Header */}
-        <div className="px-5 pt-14 pb-5">
+        <div className="px-5 pt-14 pb-5 md:pt-8">
           <div className="flex items-center justify-between mb-3">
             <p className="text-[13px] font-medium text-[#8B7355] uppercase tracking-widest">
               Routine
@@ -197,27 +198,30 @@ export default function RoutinePage() {
         </div>
 
         {/* Sections */}
-        <RoutineSection
-          label="Morning"
-          emoji="☀️"
-          period="AM"
-          tasks={morning}
-          onToggle={handleToggle}
-          onAdd={handleAdd}
-          onDelete={handleDelete}
-          readonly={!isToday}
-        />
+        <div className="md:grid md:grid-cols-2 md:gap-2 md:items-start">
+          <RoutineSection
+            label="Morning"
+            emoji="☀️"
+            period="AM"
+            tasks={morning}
+            onToggle={handleToggle}
+            onAdd={handleAdd}
+            onDelete={handleDelete}
+            readonly={!isToday}
+          />
 
-        <RoutineSection
-          label="Evening"
-          emoji="🌙"
-          period="PM"
-          tasks={evening}
-          onToggle={handleToggle}
-          onAdd={handleAdd}
-          onDelete={handleDelete}
-          readonly={!isToday}
-        />
+          <RoutineSection
+            label="Evening"
+            emoji="🌙"
+            period="PM"
+            tasks={evening}
+            onToggle={handleToggle}
+            onAdd={handleAdd}
+            onDelete={handleDelete}
+            readonly={!isToday}
+          />
+        </div>
+        </div>
       </div>
 
       {/* Calendar date picker sheet */}
@@ -248,16 +252,16 @@ function DatePickerSheet({ value, min, max, onSelect, onDismiss }: DatePickerShe
   const [picked, setPicked] = useState(value)
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end">
+    <div className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center md:p-6">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/30"
         onClick={onDismiss}
       />
 
-      {/* Sheet */}
-      <div className="relative bg-white rounded-t-3xl px-5 pt-5 pb-10 safe-area-bottom shadow-2xl">
-        <div className="w-10 h-1 rounded-full bg-[#E8E0D5] mx-auto mb-5" />
+      {/* Sheet — bottom on mobile, centered dialog on tablet */}
+      <div className="relative w-full max-w-[430px] md:max-w-sm mx-auto bg-white rounded-t-3xl md:rounded-3xl px-5 pt-5 pb-10 md:pb-6 shadow-2xl">
+        <div className="w-10 h-1 rounded-full bg-[#E8E0D5] mx-auto mb-5 md:hidden" />
         <p className="text-[15px] font-semibold text-[#2C1810] mb-4">Jump to date</p>
         <input
           type="date"

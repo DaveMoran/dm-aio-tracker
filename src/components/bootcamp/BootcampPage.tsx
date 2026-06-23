@@ -316,6 +316,7 @@ export default function BootcampPage() {
   const [content, setContent] = useState<Map<string, string>>(new Map())
   const [acExpanded, setAcExpanded] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [modal, setModal] = useState<ModalState | null>(null)
 
   const loadCurriculum = useCallback(async () => {
@@ -332,7 +333,10 @@ export default function BootcampPage() {
 
   useEffect(() => {
     setLoading(true)
-    Promise.all([loadCurriculum(), loadState()]).finally(() => setLoading(false))
+    setError(null)
+    Promise.all([loadCurriculum(), loadState()])
+      .catch((e) => setError(e instanceof Error ? e.message : 'Failed to load curriculum'))
+      .finally(() => setLoading(false))
   }, [loadCurriculum, loadState])
 
   const day: BootcampDay | undefined = week?.days.find(d => d.fullDate === date)
@@ -360,11 +364,23 @@ export default function BootcampPage() {
 
   const handleOpenModal = (state: ModalState) => setModal(state)
 
-  if (loading || !week) {
+  if (loading) {
     return (
       <div className="flex flex-col flex-1 min-h-0 pt-14">
         <div className="flex items-center justify-center h-32">
           <div className="w-7 h-7 rounded-full border-2 border-[#E8E0D5] border-t-[#5A8A6A] animate-spin" />
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !week) {
+    return (
+      <div className="flex flex-col flex-1 min-h-0 pt-14">
+        <div className="px-5 py-12 text-center">
+          <p className="text-3xl mb-3">⚠️</p>
+          <p className="text-[15px] font-semibold text-[#2C1810]">Unable to load curriculum</p>
+          <p className="text-[13px] text-[#B8A89A] mt-1">{error ?? 'No curriculum data available'}</p>
         </div>
       </div>
     )

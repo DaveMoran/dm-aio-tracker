@@ -4,6 +4,7 @@ import type { Session } from './lib/auth'
 import { onAuthStateChange, signOut } from './lib/auth'
 import { setAccessToken } from './lib/checklistApi'
 import { setBootcampAccessToken } from './lib/bootcampApi'
+import { setNutritionAccessToken } from './lib/mealStorage'
 import { TABLET_QUERY } from './lib/useMediaQuery'
 import BottomNav from './components/BottomNav'
 import Sidebar from './components/Sidebar'
@@ -28,6 +29,7 @@ export default function App() {
       setSession(s)
       setAccessToken(s?.access_token ?? null)
       setBootcampAccessToken(s?.access_token ?? null)
+      setNutritionAccessToken(s?.access_token ?? null)
     })
     return () => subscription.unsubscribe()
   }, [])
